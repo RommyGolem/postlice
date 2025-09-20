@@ -37,6 +37,7 @@ pkgs.mkShell rec {
 
   shellHook = ''
     git submodule update --remote --merge
+    cargo update
     clear
     echo "Hello, world!"
   '';
