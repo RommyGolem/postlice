@@ -36,6 +36,7 @@ pkgs.mkShell rec {
   LD_LIBRARY_PATH = builtins.foldl' (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;
 
   shellHook = ''
+    git submodule update --remote --merge
     clear
     echo "Hello, world!"
   '';
