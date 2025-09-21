@@ -9,15 +9,12 @@
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
 
-    (rust-bin.selectLatestNightlyWith (
-      toolchain:
-      toolchain.default.override {
-        extensions = [
-          "rust-src"
-          "rust-analyzer"
-        ];
-      }
-    ))
+    (rust-bin.stable.latest.default.override {
+      extensions = [
+        "rust-src"
+        "rust-analyzer"
+      ];
+    })
 
     expat
     fontconfig
@@ -37,7 +34,7 @@ pkgs.mkShell rec {
 
   shellHook = ''
     git submodule update --remote --merge
-    cargo update
+    cargo update iced iced_test
     clear
     echo "Hello, world!"
   '';
