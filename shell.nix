@@ -8,6 +8,7 @@
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
+    bacon
 
     (rust-bin.stable.latest.default.override {
       extensions = [
