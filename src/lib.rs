@@ -1,13 +1,13 @@
 use serde::Deserialize;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Province {
     pub name: String,
     pub districts: Vec<District>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct District {
     pub name: String,
     pub postal_code: u32,
