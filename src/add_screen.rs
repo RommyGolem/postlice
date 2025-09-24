@@ -9,6 +9,7 @@ use crate::geo_data::GEO_DATA;
 enum ID {
     Name,
     Recipient,
+    Address,
 }
 
 impl ID {
@@ -16,6 +17,7 @@ impl ID {
         match self {
             ID::Name => "name_text_input",
             ID::Recipient => "recipient_text_input",
+            ID::Address => "address_text_input",
         }
     }
 }
@@ -57,6 +59,7 @@ pub struct Address {
 pub enum Message {
     OnNameInput(String),
     OnRecipientInput(String),
+    OnAddressInput(String),
     OnProvinceSelect(String),
     OnProvinceInput(String),
 }
@@ -66,6 +69,7 @@ impl State {
         match message {
             Message::OnNameInput(name) => self.address.name = name,
             Message::OnRecipientInput(recipient) => self.address.recipient = recipient,
+            Message::OnAddressInput(address) => self.address.address = address,
             Message::OnProvinceSelect(province) => self.address.province = Some(province),
             Message::OnProvinceInput(filter) => {
                 self.provinces = combo_box::State::with_selection(
@@ -95,7 +99,12 @@ impl State {
                     .id(ID::Recipient.as_str())
                     .on_input(Message::OnRecipientInput)
             ],
-            row![text("ที่อยู่"), text_input("", self.address.address.as_str())],
+            row![
+                text("ที่อยู่"),
+                text_input("", self.address.address.as_str())
+                    .id(ID::Address.as_str())
+                    .on_input(Message::OnAddressInput)
+            ],
             row![
                 text("จังหวัด"),
                 combo_box(
@@ -114,26 +123,51 @@ impl State {
 
 #[cfg(test)]
 mod test {
-
     use super::{ID, State};
     use iced_test::{selector, simulator};
 
     #[test]
     fn name_input() {
+        let input = "ซันมินิมาร์ท";
+        let id = ID::Name.as_str();
         let mut state = State::default();
         let mut view = simulator(state.view());
 
-        assert!(view.click(selector::id(ID::Name.as_str())).is_ok());
-        view.typewrite("ซันมินิมาร์ท");
+        assert!(view.click(selector::id(id)).is_ok());
+        view.typewrite(input);
 
-        assert!(view.click(selector::id(ID::Recipient.as_str())).is_ok());
-        view.typewrite("ผู้จัดการร้าน");
+        view.into_messages()
+            .for_each(|message| state.update(message));
+        assert_eq!(state.address.name, input);
+    }
 
-        view.into_messages().for_each(|message| {
-            println!("{:?}", message);
-            state.update(message)
-        });
-        assert_eq!(state.address.name, "ซันมินิมาร์ท");
-        assert_eq!(state.address.recipient, "ผู้จัดการร้าน");
+    #[test]
+    fn recipient_input() {
+        let input = "ผู้จัดการร้าน";
+        let id = ID::Recipient.as_str();
+        let mut state = State::default();
+        let mut view = simulator(state.view());
+
+        assert!(view.click(selector::id(id)).is_ok());
+        view.typewrite(input);
+
+        view.into_messages()
+            .for_each(|message| state.update(message));
+        assert_eq!(state.address.recipient, input);
+    }
+
+    #[test]
+    fn address_input() {
+        let input = "82/3 ม.7";
+        let id = ID::Address.as_str();
+        let mut state = State::default();
+        let mut view = simulator(state.view());
+
+        assert!(view.click(selector::id(id)).is_ok());
+        view.typewrite(input);
+
+        view.into_messages()
+            .for_each(|message| state.update(message));
+        assert_eq!(state.address.address, input);
     }
 }
