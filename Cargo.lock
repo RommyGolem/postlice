@@ -1214,7 +1214,7 @@ dependencies = [
  "iced_runtime",
  "iced_widget",
  "iced_winit",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1229,7 +1229,7 @@ dependencies = [
  "num-traits",
  "rustc-hash 2.1.1",
  "smol_str",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
  "web-time",
 ]
 
@@ -1267,7 +1267,7 @@ dependencies = [
  "log",
  "raw-window-handle",
  "rustc-hash 2.1.1",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
  "unicode-segmentation",
 ]
 
@@ -1287,7 +1287,7 @@ dependencies = [
  "iced_tiny_skia",
  "iced_wgpu",
  "log",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1299,18 +1299,28 @@ dependencies = [
  "iced_debug",
  "iced_futures",
  "raw-window-handle",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
+]
+
+[[package]]
+name = "iced_selector"
+version = "0.14.0-dev"
+dependencies = [
+ "iced_core",
 ]
 
 [[package]]
 name = "iced_test"
 version = "0.14.0-dev"
 dependencies = [
+ "iced_program",
  "iced_renderer",
  "iced_runtime",
+ "iced_selector",
+ "nom",
  "png 0.18.0",
  "sha2",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1342,7 +1352,7 @@ dependencies = [
  "iced_graphics",
  "log",
  "rustc-hash 2.1.1",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
  "wgpu",
 ]
 
@@ -1351,11 +1361,10 @@ name = "iced_widget"
 version = "0.14.0-dev"
 dependencies = [
  "iced_renderer",
- "iced_runtime",
  "log",
  "num-traits",
  "rustc-hash 2.1.1",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
  "unicode-segmentation",
 ]
 
@@ -1368,7 +1377,7 @@ dependencies = [
  "log",
  "mundy",
  "rustc-hash 2.1.1",
- "thiserror 1.0.69",
+ "thiserror 2.0.16",
  "tracing",
  "wasm-bindgen-futures",
  "web-sys",
@@ -1699,6 +1708,15 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "memoffset",
+]
+
+[[package]]
+name = "nom"
+version = "8.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df9761775871bdef83bee530e60050f7e54b1105350d6884eb0fb4f46c2f9405"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]
