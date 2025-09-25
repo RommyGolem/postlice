@@ -1,7 +1,7 @@
 use iced::{
     Element,
     Length::Fill,
-    widget::{column, combo_box, container, row, text, text_input},
+    widget::{Id, column, combo_box, container, row, text, text_input},
 };
 
 use crate::geo_data::GEO_DATA;
@@ -12,12 +12,12 @@ enum ID {
     Address,
 }
 
-impl ID {
-    fn as_str(&self) -> &'static str {
+impl Into<Id> for ID {
+    fn into(self) -> Id {
         match self {
-            ID::Name => "name_text_input",
-            ID::Recipient => "recipient_text_input",
-            ID::Address => "address_text_input",
+            ID::Name => Id::new("name_text_input"),
+            ID::Recipient => Id::new("recipient_text_input"),
+            ID::Address => Id::new("address_text_input"),
         }
     }
 }
@@ -90,19 +90,19 @@ impl State {
             row![
                 text("ชื่อ"),
                 text_input("", self.address.name.as_str())
-                    .id(ID::Name.as_str())
+                    .id(ID::Name)
                     .on_input(Message::OnNameInput)
             ],
             row![
                 text("ถึง"),
                 text_input("", self.address.recipient.as_str())
-                    .id(ID::Recipient.as_str())
+                    .id(ID::Recipient)
                     .on_input(Message::OnRecipientInput)
             ],
             row![
                 text("ที่อยู่"),
                 text_input("", self.address.address.as_str())
-                    .id(ID::Address.as_str())
+                    .id(ID::Address)
                     .on_input(Message::OnAddressInput)
             ],
             row![
@@ -123,13 +123,13 @@ impl State {
 
 #[cfg(test)]
 mod test {
-    use super::{ID, State};
+    use super::{ID, Message, State};
     use iced_test::{selector, simulator};
 
     #[test]
-    fn name_input() {
+    fn name_text_input() {
         let input = "ซันมินิมาร์ท";
-        let id = ID::Name.as_str();
+        let id = ID::Name;
         let mut state = State::default();
         let mut view = simulator(state.view());
 
@@ -142,9 +142,9 @@ mod test {
     }
 
     #[test]
-    fn recipient_input() {
+    fn recipient_text_input() {
         let input = "ผู้จัดการร้าน";
-        let id = ID::Recipient.as_str();
+        let id = ID::Recipient;
         let mut state = State::default();
         let mut view = simulator(state.view());
 
@@ -157,9 +157,9 @@ mod test {
     }
 
     #[test]
-    fn address_input() {
+    fn address_text_input() {
         let input = "82/3 ม.7";
-        let id = ID::Address.as_str();
+        let id = ID::Address;
         let mut state = State::default();
         let mut view = simulator(state.view());
 
@@ -169,5 +169,28 @@ mod test {
         view.into_messages()
             .for_each(|message| state.update(message));
         assert_eq!(state.address.address, input);
+    }
+
+    // TODO: `iced_test` not yet support `combo_box` (no Id yet)
+    #[test]
+    fn province_combo_box() {
+        let mut state = State::default();
+
+        let inputs = ["ภ", "เ", "ก", "ต", "จ"];
+        let results = [true, true, true, true, false];
+        inputs
+            .iter()
+            .zip(results.iter())
+            .for_each(|(input, &result)| {
+                state.update(Message::OnProvinceInput(input.to_string()));
+                assert_eq!(
+                    state.provinces.options().contains(&"ภูเก็ต".to_string()),
+                    result
+                );
+            });
+
+        let input = "ภูเก็ต";
+        state.update(Message::OnProvinceSelect(input.to_string()));
+        assert_eq!(state.address.province, Some(input.to_string()));
     }
 }
