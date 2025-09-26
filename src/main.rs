@@ -38,7 +38,7 @@ impl State {
 
     fn view(&self) -> Element<'_, Message> {
         match &self.screen {
-            Screen::Add(state) => state.view().map(|message| Message::AddScreen(message)),
+            Screen::Add(state) => state.view().map(Message::AddScreen),
         }
     }
 }

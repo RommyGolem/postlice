@@ -16,13 +16,13 @@ pub mod geo_data {
     use serde::Deserialize;
     use std::sync::LazyLock;
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Clone, Default)]
     pub struct Province {
         pub name: String,
         pub districts: Vec<District>,
     }
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Clone, Default)]
     pub struct District {
         pub name: String,
         pub postal_code: u32,

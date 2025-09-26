@@ -4,7 +4,7 @@ use iced::{
     widget::{Id, column, combo_box, container, row, text, text_input},
 };
 
-use crate::geo_data::GEO_DATA;
+use crate::geo_data::{District, GEO_DATA, Province};
 
 enum ID {
     Name,
@@ -26,6 +26,7 @@ impl Into<Id> for ID {
 pub struct State {
     address: Address,
     provinces: combo_box::State<String>,
+    districts: combo_box::State<String>,
 }
 
 impl Default for State {
@@ -40,6 +41,7 @@ impl Default for State {
                 .to_vec(),
                 None,
             ),
+            districts: combo_box::State::with_selection(Vec::new(), None),
         }
     }
 }
@@ -49,10 +51,11 @@ pub struct Address {
     name: String,
     recipient: String,
     address: String,
-    _sub_district: Option<String>,
-    _district: Option<String>,
-    province: Option<String>,
-    _postal_code: String,
+    province: (Option<String>, Province),
+    district: (Option<String>, District),
+    sub_district: Option<String>,
+    postal_code: String,
+    districts: combo_box::State<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -62,6 +65,8 @@ pub enum Message {
     OnAddressInput(String),
     OnProvinceSelect(String),
     OnProvinceInput(String),
+    OnDistrictSelect(String),
+    OnDistrictInput(String),
 }
 
 impl State {
@@ -70,7 +75,26 @@ impl State {
             Message::OnNameInput(name) => self.address.name = name,
             Message::OnRecipientInput(recipient) => self.address.recipient = recipient,
             Message::OnAddressInput(address) => self.address.address = address,
-            Message::OnProvinceSelect(province) => self.address.province = Some(province),
+            Message::OnProvinceSelect(select) => {
+                self.address.province = (
+                    Some(select.clone()),
+                    match GEO_DATA.iter().find(|province| province.name == select) {
+                        Some(province) => province.clone(),
+                        None => Province::default(),
+                    },
+                );
+                self.address.districts = combo_box::State::with_selection(
+                    self.address
+                        .province
+                        .1
+                        .districts
+                        .iter()
+                        .map(|district| district.name.clone())
+                        .collect(),
+                    None,
+                );
+                self.address.district = (None, District::default());
+            }
             Message::OnProvinceInput(filter) => {
                 self.provinces = combo_box::State::with_selection(
                     (*GEO_DATA
@@ -79,6 +103,19 @@ impl State {
                         .filter(|province| province.contains(&filter))
                         .collect::<Vec<String>>())
                     .to_vec(),
+                    Some(&filter),
+                )
+            }
+            Message::OnDistrictSelect(district) => self.address.district.0 = Some(district),
+            Message::OnDistrictInput(filter) => {
+                self.districts = combo_box::State::with_selection(
+                    self.address
+                        .province
+                        .1
+                        .districts
+                        .iter()
+                        .map(|district| district.name.clone())
+                        .collect(),
                     Some(&filter),
                 )
             }
@@ -110,10 +147,20 @@ impl State {
                 combo_box(
                     &self.provinces,
                     "เลือกจังหวัด",
-                    self.address.province.as_ref(),
+                    self.address.province.0.as_ref(),
                     Message::OnProvinceSelect
                 )
                 .on_input(Message::OnProvinceInput)
+            ],
+            row![
+                text("อำเภอ"),
+                combo_box(
+                    &self.districts,
+                    "เลือกอำเภอ",
+                    self.address.district.0.as_ref(),
+                    Message::OnDistrictSelect
+                )
+                .on_input(Message::OnDistrictInput)
             ],
         ])
         .center(Fill)
@@ -191,6 +238,22 @@ mod test {
 
         let input = "ภูเก็ต";
         state.update(Message::OnProvinceSelect(input.to_string()));
-        assert_eq!(state.address.province, Some(input.to_string()));
+        assert_eq!(state.address.province.0, Some(input.to_string()));
+
+        let inputs = ["เ", "ม", "อ", "ง", "จ"];
+        let results = [true, true, true, true, false];
+        inputs
+            .iter()
+            .zip(results.iter())
+            .for_each(|(input, &result)| {
+                state.update(Message::OnDistrictInput(input.to_string()));
+                assert_eq!(
+                    state.districts.options().contains(&"เมืองภูเก็ต".to_string()),
+                    result
+                );
+            });
+        let input = "เมืองภูเก็ต";
+        state.update(Message::OnDistrictSelect(input.to_string()));
+        assert_eq!(state.address.district.0, Some(input.to_string()));
     }
 }
