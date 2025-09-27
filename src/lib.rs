@@ -22,7 +22,7 @@ pub mod geo_data {
         pub districts: Vec<District>,
     }
 
-    #[derive(Deserialize, Clone, Default)]
+    #[derive(Deserialize, Clone, Default, PartialEq, Debug)]
     pub struct District {
         pub name: String,
         pub postal_code: u32,

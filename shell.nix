@@ -1,5 +1,5 @@
 {
-  pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-25.05.tar.gz") {
+  pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {
     overlays = [
       (import (fetchTarball "https://github.com/oxalica/rust-overlay/archive/stable.tar.gz"))
     ];
@@ -36,7 +36,5 @@ pkgs.mkShell rec {
   shellHook = ''
     git submodule update --remote --force
     cargo update iced iced_test
-    clear
-    echo "Hello, world!"
   '';
 }
