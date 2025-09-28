@@ -1,6 +1,6 @@
 use iced::{
     Element,
-    Length::Fill,
+    Length::{self, Fill},
     widget::{Id, column, combo_box, container, row, text, text_input},
 };
 
@@ -68,6 +68,40 @@ pub enum Message {
     OnSubDistrictSelect(String),
     OnSubDistrictInput(String),
 }
+
+fn labeled_text_input<'a>(
+    label: &'a str,
+    value: &'a str,
+    id: ID,
+    on_input: &'a dyn Fn(String) -> Message,
+) -> row::Row<'a, Message> {
+    row![
+        text(label).width(Length::Fill),
+        text_input("", value)
+            .id(id)
+            .on_input(on_input)
+            .width(Length::FillPortion(6))
+    ]
+}
+
+// fn label_combo_box<'a>(
+//     label: String,
+//     state: &'static combo_box::State<String>,
+//     selection: Option<String>,
+//     on_selected: &'static dyn Fn(String) -> Message,
+//     on_input: &'static dyn Fn(String) -> Message,
+// ) -> row::Row<'a, Message> {
+//     row![
+//         text(label.to_string()),
+//         combo_box(
+//             state,
+//             &format!("เลือก{}", label),
+//             selection.as_ref(),
+//             on_selected
+//         )
+//         .on_input(on_input)
+//     ]
+// }
 
 impl State {
     pub fn update(&mut self, message: Message) {
@@ -160,56 +194,80 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        container(column![
+        let name_text_input =
+            labeled_text_input("ชื่อ:", &self.address.name, ID::Name, &Message::OnNameInput);
+
+        let recipient_text_input = labeled_text_input(
+            "ถึง:",
+            &self.address.recipient,
+            ID::Recipient,
+            &Message::OnRecipientInput,
+        );
+
+        let address_text_input = labeled_text_input(
+            "ที่อยู่:",
+            &self.address.address,
+            ID::Address,
+            &Message::OnAddressInput,
+        );
+
+        let province_combo_box: row::Row<'_, Message> = row![
+            text("จังหวัด").width(Length::Fill),
+            combo_box(
+                &self.provinces,
+                "เลือกจังหวัด",
+                self.address.province.0.as_ref(),
+                Message::OnProvinceSelect
+            )
+            .on_input(Message::OnProvinceInput)
+            .width(Length::FillPortion(6))
+        ];
+
+        let district_combo_box: row::Row<'_, Message> = row![
+            text("อำเภอ").width(Length::Fill),
+            combo_box(
+                &self.districts,
+                "เลือกอำเภอ",
+                self.address.district.0.as_ref(),
+                Message::OnDistrictSelect
+            )
+            .on_input(Message::OnDistrictInput)
+            .width(Length::FillPortion(6))
+        ];
+
+        let sub_district_combo_box: row::Row<'_, Message> = row![
+            text("ตำบล").width(Length::Fill),
+            combo_box(
+                &self.sub_districts,
+                "เลือกตำบล",
+                self.address.sub_district.as_ref(),
+                Message::OnSubDistrictSelect
+            )
+            .on_input(Message::OnSubDistrictInput)
+            .width(Length::FillPortion(6))
+        ];
+
+        container(
             row![
-                text("ชื่อ"),
-                text_input("", self.address.name.as_str())
-                    .id(ID::Name)
-                    .on_input(Message::OnNameInput)
-            ],
-            row![
-                text("ถึง"),
-                text_input("", self.address.recipient.as_str())
-                    .id(ID::Recipient)
-                    .on_input(Message::OnRecipientInput)
-            ],
-            row![
-                text("ที่อยู่"),
-                text_input("", self.address.address.as_str())
-                    .id(ID::Address)
-                    .on_input(Message::OnAddressInput)
-            ],
-            row![
-                text("จังหวัด"),
-                combo_box(
-                    &self.provinces,
-                    "เลือกจังหวัด",
-                    self.address.province.0.as_ref(),
-                    Message::OnProvinceSelect
+                container(
+                    column![
+                        name_text_input,
+                        recipient_text_input,
+                        address_text_input,
+                        province_combo_box,
+                        district_combo_box,
+                        sub_district_combo_box,
+                    ]
+                    .width(Length::Fill)
+                    .padding(10)
                 )
-                .on_input(Message::OnProvinceInput)
-            ],
-            row![
-                text("อำเภอ"),
-                combo_box(
-                    &self.districts,
-                    "เลือกอำเภอ",
-                    self.address.district.0.as_ref(),
-                    Message::OnDistrictSelect
-                )
-                .on_input(Message::OnDistrictInput)
-            ],
-            row![
-                text("ตำบล"),
-                combo_box(
-                    &self.sub_districts,
-                    "เลือกตำบล",
-                    self.address.sub_district.as_ref(),
-                    Message::OnSubDistrictSelect
-                )
-                .on_input(Message::OnSubDistrictInput)
-            ],
-        ])
+                .style(|_| container::bordered_box(&iced::Theme::Light)),
+                container(column![text(self.address.name.clone())].width(Length::Fill))
+                    .style(|_| container::bordered_box(&iced::Theme::Light)),
+            ]
+            .spacing(10)
+            .padding(10),
+        )
         .center(Fill)
         .into()
     }

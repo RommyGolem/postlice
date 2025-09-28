@@ -1,4 +1,5 @@
 pub mod add_screen;
+mod components;
 
 pub enum ID {
     ProvincesComboBox,
