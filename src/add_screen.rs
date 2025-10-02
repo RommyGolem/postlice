@@ -1,6 +1,5 @@
 use iced::{
-    Element,
-    Length::{self, Fill},
+    Element, Length,
     widget::{Id, column, combo_box, container, row, text, text_input},
 };
 
@@ -74,7 +73,7 @@ fn labeled_text_input<'a>(
     value: &'a str,
     id: ID,
     on_input: &'a dyn Fn(String) -> Message,
-) -> row::Row<'a, Message> {
+) -> Element<'a, Message> {
     row![
         text(label).width(Length::Fill),
         text_input("", value)
@@ -82,26 +81,28 @@ fn labeled_text_input<'a>(
             .on_input(on_input)
             .width(Length::FillPortion(6))
     ]
+    .into()
 }
 
-// fn label_combo_box<'a>(
-//     label: String,
-//     state: &'static combo_box::State<String>,
-//     selection: Option<String>,
-//     on_selected: &'static dyn Fn(String) -> Message,
-//     on_input: &'static dyn Fn(String) -> Message,
-// ) -> row::Row<'a, Message> {
-//     row![
-//         text(label.to_string()),
-//         combo_box(
-//             state,
-//             &format!("เลือก{}", label),
-//             selection.as_ref(),
-//             on_selected
-//         )
-//         .on_input(on_input)
-//     ]
-// }
+fn labeled_combo_box<'a, F, G>(
+    label: &'a str,
+    state: &'a combo_box::State<String>,
+    selection: Option<&'a String>,
+    on_selected: F,
+    on_input: G,
+) -> Element<'a, Message>
+where
+    F: 'static + Fn(String) -> Message,
+    G: 'static + Fn(String) -> Message,
+{
+    row![
+        text(label).width(Length::Fill),
+        combo_box(state, &format!("เลือก{}", label), selection, on_selected)
+            .on_input(on_input)
+            .width(Length::FillPortion(6))
+    ]
+    .into()
+}
 
 impl State {
     pub fn update(&mut self, message: Message) {
@@ -211,41 +212,29 @@ impl State {
             &Message::OnAddressInput,
         );
 
-        let province_combo_box: row::Row<'_, Message> = row![
-            text("จังหวัด").width(Length::Fill),
-            combo_box(
-                &self.provinces,
-                "เลือกจังหวัด",
-                self.address.province.0.as_ref(),
-                Message::OnProvinceSelect
-            )
-            .on_input(Message::OnProvinceInput)
-            .width(Length::FillPortion(6))
-        ];
+        let province_combo_box = labeled_combo_box(
+            "จัวหวัด",
+            &self.provinces,
+            self.address.province.0.as_ref(),
+            Message::OnProvinceSelect,
+            Message::OnProvinceInput,
+        );
 
-        let district_combo_box: row::Row<'_, Message> = row![
-            text("อำเภอ").width(Length::Fill),
-            combo_box(
-                &self.districts,
-                "เลือกอำเภอ",
-                self.address.district.0.as_ref(),
-                Message::OnDistrictSelect
-            )
-            .on_input(Message::OnDistrictInput)
-            .width(Length::FillPortion(6))
-        ];
+        let district_combo_box = labeled_combo_box(
+            "อำเภอ",
+            &self.districts,
+            self.address.district.0.as_ref(),
+            Message::OnDistrictSelect,
+            Message::OnDistrictInput,
+        );
 
-        let sub_district_combo_box: row::Row<'_, Message> = row![
-            text("ตำบล").width(Length::Fill),
-            combo_box(
-                &self.sub_districts,
-                "เลือกตำบล",
-                self.address.sub_district.as_ref(),
-                Message::OnSubDistrictSelect
-            )
-            .on_input(Message::OnSubDistrictInput)
-            .width(Length::FillPortion(6))
-        ];
+        let sub_district_combo_box = labeled_combo_box(
+            "ตำบล",
+            &self.sub_districts,
+            self.address.sub_district.as_ref(),
+            Message::OnSubDistrictSelect,
+            Message::OnSubDistrictInput,
+        );
 
         container(
             row![
@@ -262,13 +251,33 @@ impl State {
                     .padding(10)
                 )
                 .style(|_| container::bordered_box(&iced::Theme::Light)),
-                container(column![text(self.address.name.clone())].width(Length::Fill))
-                    .style(|_| container::bordered_box(&iced::Theme::Light)),
+                container(
+                    row![
+                        column![text("เรียน")],
+                        column![
+                            text(format!("{}{}", self.address.recipient, self.address.name)),
+                            text(self.address.address.clone()),
+                            text(format!(
+                                "{} {}",
+                                self.address.sub_district.clone().unwrap_or_default(),
+                                self.address.district.0.clone().unwrap_or_default()
+                            )),
+                            text(format!(
+                                "{} {}",
+                                self.address.province.0.clone().unwrap_or_default(),
+                                self.address.postal_code.clone()
+                            )),
+                        ]
+                        .width(Length::Fill)
+                    ]
+                    .spacing(10)
+                )
+                .style(|_| container::bordered_box(&iced::Theme::Light)),
             ]
             .spacing(10)
             .padding(10),
         )
-        .center(Fill)
+        .center(Length::Fill)
         .into()
     }
 }

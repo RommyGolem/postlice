@@ -1,18 +1,6 @@
 pub mod add_screen;
 mod components;
 
-pub enum ID {
-    ProvincesComboBox,
-}
-
-impl ID {
-    pub fn to_id(self) -> &'static str {
-        match self {
-            ID::ProvincesComboBox => "provinces_combo_box",
-        }
-    }
-}
-
 pub mod geo_data {
     use serde::Deserialize;
     use std::sync::LazyLock;

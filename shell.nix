@@ -29,6 +29,8 @@ pkgs.mkShell rec {
     xorg.libXrandr
     wayland
     libxkbcommon
+
+    mesa
   ];
 
   LD_LIBRARY_PATH = builtins.foldl' (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;
@@ -36,5 +38,6 @@ pkgs.mkShell rec {
   shellHook = ''
     git submodule update --remote --force
     cargo update iced iced_test
+    clear
   '';
 }
