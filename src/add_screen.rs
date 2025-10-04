@@ -1,6 +1,6 @@
 use iced::{
     Element, Length,
-    widget::{Id, column, combo_box, container, row, text, text_input},
+    widget::{Id, Text, column, combo_box, container, row, text, text_input},
 };
 
 use crate::geo_data::{District, GEO_DATA, Province};
@@ -96,7 +96,7 @@ where
     G: 'static + Fn(String) -> Message,
 {
     row![
-        text(label).width(Length::Fill),
+        text(format!("{}:", label)).width(Length::Fill),
         combo_box(state, &format!("เลือก{}", label), selection, on_selected)
             .on_input(on_input)
             .width(Length::FillPortion(6))
@@ -213,7 +213,7 @@ impl State {
         );
 
         let province_combo_box = labeled_combo_box(
-            "จัวหวัด",
+            "จังหวัด",
             &self.provinces,
             self.address.province.0.as_ref(),
             Message::OnProvinceSelect,
@@ -236,6 +236,47 @@ impl State {
             Message::OnSubDistrictInput,
         );
 
+        let output_line_one: Text =
+            text(format!("{}{}", self.address.recipient, self.address.name));
+        let output_line_two: Text = text(self.address.address.clone());
+        let output_line_three: Text = text(
+            match (
+                self.address.province.0 == Some("กรุงเทพมหานคร".to_string()),
+                self.address.sub_district.clone(),
+                self.address.district.0.clone(),
+            ) {
+                (true, Some(sub_district), Some(district)) => {
+                    format!("แขวง{} เขต{}", sub_district, district)
+                }
+                (true, Some(sub_district), None) => {
+                    format!("แขวง{}", sub_district)
+                }
+                (true, None, Some(district)) => {
+                    format!("เขต{}", district)
+                }
+                (false, Some(sub_district), Some(district)) => {
+                    format!("ตำบล{} อำเภอ{}", sub_district, district)
+                }
+                (false, Some(sub_district), None) => {
+                    format!("ตำบล{}", sub_district)
+                }
+                (false, None, Some(district)) => {
+                    format!("อำเภอ{}", district)
+                }
+                (_, _, _) => "".to_string(),
+            },
+        );
+        let output_line_four: Text = text(
+            match (
+                self.address.province.0 == Some("กรุงเทพมหานคร".to_string()),
+                self.address.province.0.clone(),
+            ) {
+                (true, _) => format!("กรุงเทพมหานคร {}", self.address.postal_code),
+                (_, Some(district)) => format!("จังหวัด{} {}", district, self.address.postal_code),
+                (_, _) => "".to_string(),
+            },
+        );
+
         container(
             row![
                 container(
@@ -249,33 +290,25 @@ impl State {
                     ]
                     .width(Length::Fill)
                     .padding(10)
-                )
-                .style(|_| container::bordered_box(&iced::Theme::Light)),
-                container(
-                    row![
-                        column![text("เรียน")],
-                        column![
-                            text(format!("{}{}", self.address.recipient, self.address.name)),
-                            text(self.address.address.clone()),
-                            text(format!(
-                                "{} {}",
-                                self.address.sub_district.clone().unwrap_or_default(),
-                                self.address.district.0.clone().unwrap_or_default()
-                            )),
-                            text(format!(
-                                "{} {}",
-                                self.address.province.0.clone().unwrap_or_default(),
-                                self.address.postal_code.clone()
-                            )),
-                        ]
-                        .width(Length::Fill)
-                    ]
                     .spacing(10)
                 )
                 .style(|_| container::bordered_box(&iced::Theme::Light)),
+                container(row![
+                    column![text("เรียน")].width(Length::Fill).padding(10),
+                    column![
+                        output_line_one,
+                        output_line_two,
+                        output_line_three,
+                        output_line_four
+                    ]
+                    .width(Length::FillPortion(6))
+                    .padding(10)
+                    .spacing(10)
+                ])
+                .style(|_| container::bordered_box(&iced::Theme::Light)),
             ]
-            .spacing(10)
-            .padding(10),
+            .spacing(50)
+            .padding(50),
         )
         .center(Length::Fill)
         .into()

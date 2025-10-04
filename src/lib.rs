@@ -1,5 +1,4 @@
 pub mod add_screen;
-mod components;
 
 pub mod geo_data {
     use serde::Deserialize;
@@ -18,7 +17,14 @@ pub mod geo_data {
         pub sub_districts: Vec<String>,
     }
 
-    pub static GEO_DATA: LazyLock<Vec<Province>> = LazyLock::new(|| {
-        serde_json::from_str(include_str!("../data/geo-data.json")).unwrap_or_default()
-    });
+    pub static GEO_DATA: LazyLock<Vec<Province>> =
+        LazyLock::new(|| serde_json::from_str(include_str!("../data/geo-data.json")).unwrap());
+}
+
+pub mod database {
+    use sqlx::sqlite::SqlitePool;
+    use std::sync::OnceLock;
+
+    pub static POOL: OnceLock<SqlitePool> =
+        OnceLock::get_or_init(|| async { SqlitePool::connect("sqlite::memory").await.unwrap() });
 }
