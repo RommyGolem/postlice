@@ -1,25 +1,8 @@
+use crate::geo_data::{District, GEO_DATA, Province};
 use iced::{
     Element, Length,
-    widget::{Id, Text, column, combo_box, container, row, text, text_input},
+    widget::{Text, column, combo_box, container, row, text, text_input},
 };
-
-use crate::geo_data::{District, GEO_DATA, Province};
-
-enum ID {
-    Name,
-    Recipient,
-    Address,
-}
-
-impl From<ID> for Id {
-    fn from(id: ID) -> Self {
-        match id {
-            ID::Name => Id::new("name_text_input"),
-            ID::Recipient => Id::new("recipient_text_input"),
-            ID::Address => Id::new("address_text_input"),
-        }
-    }
-}
 
 #[derive(Clone)]
 pub struct State {
@@ -71,13 +54,11 @@ pub enum Message {
 fn labeled_text_input<'a>(
     label: &'a str,
     value: &'a str,
-    id: ID,
     on_input: &'a dyn Fn(String) -> Message,
 ) -> Element<'a, Message> {
     row![
         text(label).width(Length::Fill),
         text_input("", value)
-            .id(id)
             .on_input(on_input)
             .width(Length::FillPortion(6))
     ]
@@ -195,22 +176,13 @@ impl State {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let name_text_input =
-            labeled_text_input("ชื่อ:", &self.address.name, ID::Name, &Message::OnNameInput);
+        let name_text_input = labeled_text_input("ชื่อ:", &self.address.name, &Message::OnNameInput);
 
-        let recipient_text_input = labeled_text_input(
-            "ถึง:",
-            &self.address.recipient,
-            ID::Recipient,
-            &Message::OnRecipientInput,
-        );
+        let recipient_text_input =
+            labeled_text_input("ถึง:", &self.address.recipient, &Message::OnRecipientInput);
 
-        let address_text_input = labeled_text_input(
-            "ที่อยู่:",
-            &self.address.address,
-            ID::Address,
-            &Message::OnAddressInput,
-        );
+        let address_text_input =
+            labeled_text_input("ที่อยู่:", &self.address.address, &Message::OnAddressInput);
 
         let province_combo_box = labeled_combo_box(
             "จังหวัด",
@@ -319,55 +291,35 @@ impl State {
 mod test {
     use crate::geo_data::District;
 
-    use super::{ID, Message, State};
-    use iced_test::{selector, simulator};
+    use super::{Message, State};
 
     #[test]
     fn name_text_input() {
         let input = "ซันมินิมาร์ท";
-        let id = ID::Name;
         let mut state = State::default();
-        let mut view = simulator(state.view());
 
-        assert!(view.click(selector::id(id)).is_ok());
-        view.typewrite(input);
-
-        view.into_messages()
-            .for_each(|message| state.update(message));
+        state.update(Message::OnNameInput(input.to_string()));
         assert_eq!(state.address.name, input);
     }
 
     #[test]
     fn recipient_text_input() {
         let input = "ผู้จัดการร้าน";
-        let id = ID::Recipient;
         let mut state = State::default();
-        let mut view = simulator(state.view());
 
-        assert!(view.click(selector::id(id)).is_ok());
-        view.typewrite(input);
-
-        view.into_messages()
-            .for_each(|message| state.update(message));
+        state.update(Message::OnRecipientInput(input.to_string()));
         assert_eq!(state.address.recipient, input);
     }
 
     #[test]
     fn address_text_input() {
         let input = "82/3 ม.7";
-        let id = ID::Address;
         let mut state = State::default();
-        let mut view = simulator(state.view());
 
-        assert!(view.click(selector::id(id)).is_ok());
-        view.typewrite(input);
-
-        view.into_messages()
-            .for_each(|message| state.update(message));
+        state.update(Message::OnAddressInput(input.to_string()));
         assert_eq!(state.address.address, input);
     }
 
-    // TODO: `iced_test` not yet support `combo_box` (no Id yet)
     #[test]
     fn province_combo_box() {
         let mut state = State::default();

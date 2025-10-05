@@ -1435,6 +1435,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_core",
  "iced_debug",
@@ -1449,6 +1450,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "bitflags 2.9.4",
  "bytes",
@@ -1465,6 +1467,7 @@ dependencies = [
 [[package]]
 name = "iced_debug"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1474,11 +1477,13 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "futures",
  "iced_core",
  "log",
  "rustc-hash 2.1.1",
+ "tokio",
  "wasm-bindgen-futures",
  "wasmtimer",
 ]
@@ -1486,6 +1491,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "bitflags 2.9.4",
  "bytemuck",
@@ -1503,6 +1509,7 @@ dependencies = [
 [[package]]
 name = "iced_program"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -1511,6 +1518,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -1522,6 +1530,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "bytes",
  "iced_core",
@@ -1532,29 +1541,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "iced_selector"
-version = "0.14.0-dev"
-dependencies = [
- "iced_core",
-]
-
-[[package]]
-name = "iced_test"
-version = "0.14.0-dev"
-dependencies = [
- "iced_program",
- "iced_renderer",
- "iced_runtime",
- "iced_selector",
- "nom",
- "png 0.18.0",
- "sha2",
- "thiserror 2.0.16",
-]
-
-[[package]]
 name = "iced_tiny_skia"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -1570,6 +1559,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "bitflags 2.9.4",
  "bytemuck",
@@ -1588,6 +1578,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_renderer",
  "log",
@@ -1600,6 +1591,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0-dev"
+source = "git+https://github.com/iced-rs/iced?branch=master#0a34496c793fd87c235e764317351a0aacd4f6d1"
 dependencies = [
  "iced_debug",
  "iced_program",
@@ -2102,15 +2094,6 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "memoffset",
-]
-
-[[package]]
-name = "nom"
-version = "8.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df9761775871bdef83bee530e60050f7e54b1105350d6884eb0fb4f46c2f9405"
-dependencies = [
- "memchr",
 ]
 
 [[package]]
@@ -2709,19 +2692,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "png"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97baced388464909d42d89643fe4361939af9b7ce7a31ee32a168f832a70f2a0"
-dependencies = [
- "bitflags 2.9.4",
- "crc32fast",
- "fdeflate",
- "flate2",
- "miniz_oxide",
-]
-
-[[package]]
 name = "polling"
 version = "3.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2755,10 +2725,10 @@ name = "postlice"
 version = "0.1.0"
 dependencies = [
  "iced",
- "iced_test",
  "serde",
  "serde_json",
  "sqlx",
+ "tokio",
 ]
 
 [[package]]
@@ -3666,7 +3636,7 @@ dependencies = [
  "bytemuck",
  "cfg-if",
  "log",
- "png 0.17.16",
+ "png",
  "tiny-skia-path",
 ]
 
