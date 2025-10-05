@@ -1,5 +1,5 @@
-use iced::{self, Element, Font, Pixels, Settings, Subscription, Task, keyboard};
-use postlice::{State, add_screen, subscription};
+use iced::{self, Font, Pixels, Settings, Theme};
+use postlice::{State, subscription};
 use std::borrow::Cow;
 
 fn main() -> iced::Result {
@@ -13,6 +13,7 @@ fn main() -> iced::Result {
 
     iced::application(State::default, State::update, State::view)
         .settings(settings)
+        .theme(Theme::Light)
         .subscription(subscription)
         .run()
 }

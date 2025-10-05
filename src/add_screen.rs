@@ -1,6 +1,6 @@
 use crate::geo_data::{District, GEO_DATA, Province};
 use iced::{
-    Element, Length,
+    Element, Length, Task,
     widget::{Text, column, combo_box, container, row, text, text_input},
 };
 
@@ -35,8 +35,10 @@ pub struct Address {
     districts: combo_box::State<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Message {
+    GotoHome,
+
     OnNameInput(String),
     OnRecipientInput(String),
     OnAddressInput(String),
@@ -86,8 +88,10 @@ where
 }
 
 impl State {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Task<crate::Message> {
+        let mut tasks = Vec::new();
         match message {
+            Message::GotoHome => tasks.push(Task::done(crate::Message::GotoHome)),
             Message::OnNameInput(name) => self.address.name = name,
             Message::OnRecipientInput(recipient) => self.address.recipient = recipient,
             Message::OnAddressInput(address) => self.address.address = address,
@@ -173,6 +177,8 @@ impl State {
                 self.address.sub_district = Some(sub_district);
             }
         }
+
+        Task::batch(tasks)
     }
 
     pub fn view(&self) -> Element<'_, Message> {
@@ -289,16 +295,30 @@ impl State {
 
 #[cfg(test)]
 mod test {
-    use crate::geo_data::District;
-
     use super::{Message, State};
+    use crate::{geo_data::District, home_screen};
+
+    #[test]
+    fn back_button() {
+        let mut state = crate::State {
+            screen: crate::Screen::Add(Box::from(State::default())),
+        };
+
+        let task = state.update(crate::Message::AddScreen(Message::GotoHome));
+        let _ = task.map(|message| assert_eq!(message, crate::Message::GotoHome));
+        let _ = state.update(crate::Message::GotoHome);
+        assert!(matches!(
+            state.screen,
+            crate::Screen::Home(home_screen::State)
+        ));
+    }
 
     #[test]
     fn name_text_input() {
         let input = "ซันมินิมาร์ท";
         let mut state = State::default();
 
-        state.update(Message::OnNameInput(input.to_string()));
+        let _ = state.update(Message::OnNameInput(input.to_string()));
         assert_eq!(state.address.name, input);
     }
 
@@ -307,7 +327,7 @@ mod test {
         let input = "ผู้จัดการร้าน";
         let mut state = State::default();
 
-        state.update(Message::OnRecipientInput(input.to_string()));
+        let _ = state.update(Message::OnRecipientInput(input.to_string()));
         assert_eq!(state.address.recipient, input);
     }
 
@@ -316,7 +336,7 @@ mod test {
         let input = "82/3 ม.7";
         let mut state = State::default();
 
-        state.update(Message::OnAddressInput(input.to_string()));
+        let _ = state.update(Message::OnAddressInput(input.to_string()));
         assert_eq!(state.address.address, input);
     }
 
@@ -330,7 +350,7 @@ mod test {
             .iter()
             .zip(results.iter())
             .for_each(|(input, &result)| {
-                state.update(Message::OnProvinceInput(input.to_string()));
+                let _ = state.update(Message::OnProvinceInput(input.to_string()));
                 assert_eq!(
                     state.provinces.options().contains(&"ภูเก็ต".to_string()),
                     result
@@ -338,7 +358,7 @@ mod test {
             });
 
         let input = "ภูเก็ต";
-        state.update(Message::OnProvinceSelect(input.to_string()));
+        let _ = state.update(Message::OnProvinceSelect(input.to_string()));
         assert_eq!(state.address.province.0, Some(input.to_string()));
         assert_eq!(state.address.district, (None, District::default()));
     }
@@ -346,7 +366,7 @@ mod test {
     #[test]
     fn district_combo_box() {
         let mut state = State::default();
-        state.update(Message::OnProvinceSelect("ภูเก็ต".to_string()));
+        let _ = state.update(Message::OnProvinceSelect("ภูเก็ต".to_string()));
 
         let inputs = ["เ", "ม", "อ", "ง", "จ"];
         let results = [true, true, true, true, false];
@@ -354,7 +374,7 @@ mod test {
             .iter()
             .zip(results.iter())
             .for_each(|(input, &result)| {
-                state.update(Message::OnDistrictInput(input.to_string()));
+                let _ = state.update(Message::OnDistrictInput(input.to_string()));
                 assert_eq!(
                     state.districts.options().contains(&"เมืองภูเก็ต".to_string()),
                     result
@@ -362,7 +382,7 @@ mod test {
             });
 
         let input = "เมืองภูเก็ต";
-        state.update(Message::OnDistrictSelect(input.to_string()));
+        let _ = state.update(Message::OnDistrictSelect(input.to_string()));
         assert_eq!(state.address.district.0, Some(input.to_string()));
         assert_eq!(state.address.postal_code, "83000".to_string());
     }
@@ -370,8 +390,8 @@ mod test {
     #[test]
     fn sub_district_combo_box() {
         let mut state = State::default();
-        state.update(Message::OnProvinceSelect("ภูเก็ต".to_string()));
-        state.update(Message::OnDistrictSelect("เมืองภูเก็ต".to_string()));
+        let _ = state.update(Message::OnProvinceSelect("ภูเก็ต".to_string()));
+        let _ = state.update(Message::OnDistrictSelect("เมืองภูเก็ต".to_string()));
 
         let inputs = ["ว", "ช", "ต", "จ"];
         let results = [true, true, true, false];
@@ -379,7 +399,7 @@ mod test {
             .iter()
             .zip(results.iter())
             .for_each(|(input, &result)| {
-                state.update(Message::OnSubDistrictInput(input.to_string()));
+                let _ = state.update(Message::OnSubDistrictInput(input.to_string()));
                 assert_eq!(
                     state.sub_districts.options().contains(&"วิชิต".to_string()),
                     result
@@ -387,7 +407,7 @@ mod test {
             });
 
         let input = "วิชิต";
-        state.update(Message::OnSubDistrictSelect(input.to_string()));
+        let _ = state.update(Message::OnSubDistrictSelect(input.to_string()));
         assert_eq!(state.address.sub_district, Some(input.to_string()));
     }
 }

@@ -1,13 +1,13 @@
 use iced::{
     Element, Fill, Task,
-    widget::{button, container, text},
+    widget::{button, container},
 };
 
-#[derive(Clone)]
-pub(crate) struct State;
+#[derive(Clone, PartialEq)]
+pub struct State;
 
-#[derive(Clone, Debug)]
-pub(crate) enum Message {
+#[derive(Clone, Debug, PartialEq)]
+pub enum Message {
     GotoAddScreen,
 }
 

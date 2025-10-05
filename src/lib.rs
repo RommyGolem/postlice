@@ -1,4 +1,5 @@
 pub mod add_screen;
+pub mod geo_data;
 pub mod home_screen;
 
 use iced::{Element, Subscription, Task, keyboard};
@@ -9,7 +10,7 @@ pub struct State {
 
 #[derive(Clone)]
 enum Screen {
-    Add(add_screen::State),
+    Add(Box<add_screen::State>),
     Home(home_screen::State),
 }
 
@@ -21,11 +22,12 @@ impl Default for State {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Message {
     HomeScreen(home_screen::Message),
     AddScreen(add_screen::Message),
     GotoAddScreen,
+    GotoHome,
 }
 
 impl State {
@@ -33,11 +35,14 @@ impl State {
         let mut tasks = Vec::new();
 
         match (&mut self.screen, message) {
-            (_, Message::GotoAddScreen) => self.screen = Screen::Add(add_screen::State::default()),
+            (_, Message::GotoAddScreen) => {
+                self.screen = Screen::Add(Box::from(add_screen::State::default()))
+            }
+            (_, Message::GotoHome) => self.screen = Screen::Home(home_screen::State),
             (Screen::Home(state), Message::HomeScreen(message)) => {
                 tasks.push(state.update(message))
             }
-            (Screen::Add(state), Message::AddScreen(message)) => state.update(message),
+            (Screen::Add(state), Message::AddScreen(message)) => tasks.push(state.update(message)),
             (_, _) => {}
         };
         Task::batch(tasks)
@@ -57,27 +62,6 @@ pub fn subscription(_state: &State) -> Subscription<Message> {
 
 #[cfg(test)]
 mod test {}
-
-pub mod geo_data {
-    use serde::Deserialize;
-    use std::sync::LazyLock;
-
-    #[derive(Deserialize, Clone, Default)]
-    pub struct Province {
-        pub name: String,
-        pub districts: Vec<District>,
-    }
-
-    #[derive(Deserialize, Clone, Default, PartialEq, Debug)]
-    pub struct District {
-        pub name: String,
-        pub postal_code: u32,
-        pub sub_districts: Vec<String>,
-    }
-
-    pub static GEO_DATA: LazyLock<Vec<Province>> =
-        LazyLock::new(|| serde_json::from_str(include_str!("../data/geo-data.json")).unwrap());
-}
 
 pub mod database {
     use sqlx::SqlitePool;
