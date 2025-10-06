@@ -1,4 +1,5 @@
 pub mod add_screen;
+pub mod database;
 pub mod geo_data;
 pub mod home_screen;
 
@@ -28,11 +29,12 @@ pub enum Message {
     AddScreen(add_screen::Message),
     GotoAddScreen,
     GotoHome,
+    None,
 }
 
 impl State {
     pub fn update(&mut self, message: Message) -> Task<Message> {
-        let mut tasks = Vec::new();
+        let mut tasks: Vec<Task<Message>> = Vec::new();
 
         match (&mut self.screen, message) {
             (_, Message::GotoAddScreen) => {
@@ -40,9 +42,21 @@ impl State {
             }
             (_, Message::GotoHome) => self.screen = Screen::Home(home_screen::State),
             (Screen::Home(state), Message::HomeScreen(message)) => {
-                tasks.push(state.update(message))
+                tasks.push(state.update(message).map(
+                    |message: home_screen::Message| match message {
+                        home_screen::Message::GotoAddScreen => Message::GotoAddScreen,
+                        // _ => Message::HomeScreen(message),
+                    },
+                ))
             }
-            (Screen::Add(state), Message::AddScreen(message)) => tasks.push(state.update(message)),
+            (Screen::Add(state), Message::AddScreen(message)) => {
+                tasks.push(state.update(message).map(
+                    |message: add_screen::Message| match message {
+                        add_screen::Message::GotoHome => Message::GotoHome,
+                        _ => Message::AddScreen(message),
+                    },
+                ))
+            }
             (_, _) => {}
         };
         Task::batch(tasks)
@@ -62,20 +76,3 @@ pub fn subscription(_state: &State) -> Subscription<Message> {
 
 #[cfg(test)]
 mod test {}
-
-pub mod database {
-    use sqlx::SqlitePool;
-    use std::sync::OnceLock;
-
-    static POOL: OnceLock<SqlitePool> = OnceLock::new();
-
-    pub async fn init_pool() -> sqlx::Result<()> {
-        let pool = SqlitePool::connect("sqlite::memory:").await?;
-        POOL.set(pool).map_err(|_| sqlx::Error::PoolClosed)?;
-        Ok(())
-    }
-
-    pub fn get_pool() -> Option<&'static SqlitePool> {
-        POOL.get()
-    }
-}

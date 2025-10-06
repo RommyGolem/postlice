@@ -16,3 +16,4 @@ pub struct District {
 
 pub static GEO_DATA: LazyLock<Vec<Province>> =
     LazyLock::new(|| serde_json::from_str(include_str!("../data/geo-data.json")).unwrap());
+

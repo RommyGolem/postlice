@@ -88,10 +88,10 @@ where
 }
 
 impl State {
-    pub fn update(&mut self, message: Message) -> Task<crate::Message> {
+    pub fn update(&mut self, message: Message) -> Task<Message> {
         let mut tasks = Vec::new();
         match message {
-            Message::GotoHome => tasks.push(Task::done(crate::Message::GotoHome)),
+            Message::GotoHome => tasks.push(Task::done(Message::GotoHome)),
             Message::OnNameInput(name) => self.address.name = name,
             Message::OnRecipientInput(recipient) => self.address.recipient = recipient,
             Message::OnAddressInput(address) => self.address.address = address,
@@ -296,21 +296,13 @@ impl State {
 #[cfg(test)]
 mod test {
     use super::{Message, State};
-    use crate::{geo_data::District, home_screen};
+    use crate::geo_data::District;
 
     #[test]
     fn back_button() {
-        let mut state = crate::State {
-            screen: crate::Screen::Add(Box::from(State::default())),
-        };
-
-        let task = state.update(crate::Message::AddScreen(Message::GotoHome));
-        let _ = task.map(|message| assert_eq!(message, crate::Message::GotoHome));
-        let _ = state.update(crate::Message::GotoHome);
-        assert!(matches!(
-            state.screen,
-            crate::Screen::Home(home_screen::State)
-        ));
+        let mut state = State::default();
+        let task = state.update(Message::GotoHome);
+        let _ = task.map(|message| assert_eq!(message, Message::GotoHome));
     }
 
     #[test]
